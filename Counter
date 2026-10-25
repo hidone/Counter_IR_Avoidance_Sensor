@@ -1,0 +1,107 @@
+// عداد أشياء بالأردوينو: حساس عائق IR + شاشة 7-segment من 4 خانات
+// Arduino object counter: IR obstacle sensor + 4-digit 7-segment display
+// (مستخرج من الفيديو / transcribed from the video)
+
+int ObstaclePin = 9;     // طرف حساس العائق
+int isObstacle = HIGH;   // الحالة الحالية للحساس
+int value = 0;           // العدد المعروض
+
+// أطراف مقاطع الشاشة a..g
+int a = 2;
+int b = 3;
+int c = 4;
+int d = 5;
+int e = 6;
+int f = 7;
+int g = 8;
+
+// أطراف اختيار الخانات (آحاد، عشرات، مئات، آلاف)
+int D1 = 10;
+int D2 = 11;
+int D3 = 12;
+int D4 = 13;
+
+void setup() {
+  pinMode(ObstaclePin, INPUT);
+  pinMode(a, OUTPUT);
+  pinMode(b, OUTPUT);
+  pinMode(c, OUTPUT);
+  pinMode(d, OUTPUT);
+  pinMode(e, OUTPUT);
+  pinMode(f, OUTPUT);
+  pinMode(g, OUTPUT);
+  pinMode(D1, OUTPUT);
+  pinMode(D2, OUTPUT);
+  pinMode(D3, OUTPUT);
+  pinMode(D4, OUTPUT);
+}
+
+void loop() {
+  int LastState = isObstacle;
+  isObstacle = digitalRead(ObstaclePin);
+  if (isObstacle == LOW && isObstacle != LastState)
+    value++;
+
+  // فصل الأرقام
+  int u = value % 10;
+  int d = (value % 100 - value % 10) / 10;
+  int h = (value % 1000 - value % 100) / 100;
+  int t = (value - value % 1000) / 1000;
+
+  // عرض الخانات بالتناوب السريع
+  displayDigit(u);
+  digitalWrite(D4, HIGH);
+  digitalWrite(D3, LOW);
+  digitalWrite(D2, LOW);
+  digitalWrite(D1, LOW);
+  delay(1);
+
+  displayDigit(d);
+  digitalWrite(D4, LOW);
+  digitalWrite(D3, HIGH);
+  digitalWrite(D2, LOW);
+  digitalWrite(D1, LOW);
+  delay(1);
+
+  displayDigit(h);
+  digitalWrite(D4, LOW);
+  digitalWrite(D3, LOW);
+  digitalWrite(D2, HIGH);
+  digitalWrite(D1, LOW);
+  delay(1);
+
+  displayDigit(t);
+  digitalWrite(D4, LOW);
+  digitalWrite(D3, LOW);
+  digitalWrite(D2, LOW);
+  digitalWrite(D1, HIGH);
+  delay(1);
+}
+
+void displayDigit(int digit)
+{
+  // إطفاء كل المقاطع أولًا (HIGH = مطفأ)
+  digitalWrite(a, HIGH);
+  digitalWrite(b, HIGH);
+  digitalWrite(c, HIGH);
+  digitalWrite(d, HIGH);
+  digitalWrite(e, HIGH);
+  digitalWrite(f, HIGH);
+  digitalWrite(g, HIGH);
+
+  // إضاءة المقاطع اللازمة (LOW = مضاء)
+  if (digit != 1 && digit != 4)
+    digitalWrite(a, LOW);
+  if (digit != 5 && digit != 6)
+    digitalWrite(b, LOW);
+  if (digit != 2)
+    digitalWrite(c, LOW);
+  if (digit != 1 && digit != 4 && digit != 7)
+    digitalWrite(d, LOW);
+  if (digit == 0 || digit == 2 || digit == 6 || digit == 8)
+    digitalWrite(e, LOW);
+  if (digit != 1 && digit != 2 && digit != 3 && digit != 7)
+    digitalWrite(f, LOW);
+  if (digit != 0 && digit != 1 && digit != 7)
+    digitalWrite(g, LOW);
+}
